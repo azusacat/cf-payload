@@ -122,7 +122,7 @@ The default credentials are `dev@payloadcms.com` as E-Mail and `test` as passwor
 
 ### Database Setup
 
-First, copy the `.env.example` file to your `.env`.
+First, copy the `.env.cfexample` file to your `.env`.
 
 Set `PAYLOAD_DATABASE` in your `.env` file to choose the database adapter:
 
