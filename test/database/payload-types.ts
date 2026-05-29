@@ -722,7 +722,7 @@ export interface UniqueField {
  * via the `definition` "select-has-many".
  */
 export interface SelectHasMany {
-  id: string;
+  id: number;
   roles?: ('user' | 'admin' | 'editor')[] | null;
   food?: ('apple' | 'bananabread' | 'banana')[] | null;
   updatedAt: string;
@@ -733,7 +733,7 @@ export interface SelectHasMany {
  * via the `definition` "virtual-linked-tenants".
  */
 export interface VirtualLinkedTenant {
-  id: string;
+  id: number;
   slug: string;
   updatedAt: string;
   createdAt: string;
@@ -743,9 +743,9 @@ export interface VirtualLinkedTenant {
  * via the `definition` "virtual-linked-roles".
  */
 export interface VirtualLinkedRole {
-  id: string;
-  project: string | VirtualLinkedProject;
-  tenant: string | VirtualLinkedTenant;
+  id: number;
+  project: number | VirtualLinkedProject;
+  tenant: number | VirtualLinkedTenant;
   tenantSlug?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -755,9 +755,9 @@ export interface VirtualLinkedRole {
  * via the `definition` "virtual-linked-projects".
  */
 export interface VirtualLinkedProject {
-  id: string;
+  id: number;
   roles?: {
-    docs?: (string | VirtualLinkedRole)[];
+    docs?: (number | VirtualLinkedRole)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
@@ -903,19 +903,19 @@ export interface PayloadLockedDocument {
       } | null)
     | ({
         relationTo: 'select-has-many';
-        value: string | SelectHasMany;
+        value: number | SelectHasMany;
       } | null)
     | ({
         relationTo: 'virtual-linked-tenants';
-        value: string | VirtualLinkedTenant;
+        value: number | VirtualLinkedTenant;
       } | null)
     | ({
         relationTo: 'virtual-linked-roles';
-        value: string | VirtualLinkedRole;
+        value: number | VirtualLinkedRole;
       } | null)
     | ({
         relationTo: 'virtual-linked-projects';
-        value: string | VirtualLinkedProject;
+        value: number | VirtualLinkedProject;
       } | null)
     | ({
         relationTo: 'users';
