@@ -19,6 +19,10 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	\`updated_at\` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL,
   	\`created_at\` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL,
   	\`email\` text NOT NULL,
+  	\`name\` text,
+  	\`role\` text,
+  	\`title\` text,
+  	\`phone\` text,
   	\`reset_password_token\` text,
   	\`reset_password_expiration\` text,
   	\`salt\` text,
@@ -47,6 +51,32 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   await db.run(sql`CREATE INDEX \`media_updated_at_idx\` ON \`media\` (\`updated_at\`);`)
   await db.run(sql`CREATE INDEX \`media_created_at_idx\` ON \`media\` (\`created_at\`);`)
   await db.run(sql`CREATE UNIQUE INDEX \`media_filename_idx\` ON \`media\` (\`filename\`);`)
+  await db.run(sql`CREATE TABLE \`schools\` (
+  	\`id\` integer PRIMARY KEY NOT NULL,
+  	\`name\` text NOT NULL,
+  	\`remarks\` text,
+  	\`updated_at\` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL,
+  	\`created_at\` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL
+  );
+  `)
+  await db.run(sql`CREATE INDEX \`schools_updated_at_idx\` ON \`schools\` (\`updated_at\`);`)
+  await db.run(sql`CREATE INDEX \`schools_created_at_idx\` ON \`schools\` (\`created_at\`);`)
+  await db.run(sql`CREATE TABLE \`missions\` (
+  	\`id\` integer PRIMARY KEY NOT NULL,
+  	\`name\` text NOT NULL,
+  	\`remarks\` text,
+  	\`school_id\` integer NOT NULL,
+  	\`teacher_id\` integer NOT NULL,
+  	\`updated_at\` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL,
+  	\`created_at\` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL,
+  	FOREIGN KEY (\`school_id\`) REFERENCES \`schools\`(\`id\`) ON UPDATE no action ON DELETE no action,
+  	FOREIGN KEY (\`teacher_id\`) REFERENCES \`users\`(\`id\`) ON UPDATE no action ON DELETE no action
+  );
+  `)
+  await db.run(sql`CREATE INDEX \`missions_school_id_idx\` ON \`missions\` (\`school_id\`);`)
+  await db.run(sql`CREATE INDEX \`missions_teacher_id_idx\` ON \`missions\` (\`teacher_id\`);`)
+  await db.run(sql`CREATE INDEX \`missions_updated_at_idx\` ON \`missions\` (\`updated_at\`);`)
+  await db.run(sql`CREATE INDEX \`missions_created_at_idx\` ON \`missions\` (\`created_at\`);`)
   await db.run(sql`CREATE TABLE \`payload_locked_documents\` (
   	\`id\` integer PRIMARY KEY NOT NULL,
   	\`global_slug\` text,
@@ -147,6 +177,8 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
   await db.run(sql`DROP TABLE \`users_sessions\`;`)
+  await db.run(sql`DROP TABLE \`missions\`;`)
+  await db.run(sql`DROP TABLE \`schools\`;`)
   await db.run(sql`DROP TABLE \`users\`;`)
   await db.run(sql`DROP TABLE \`media\`;`)
   await db.run(sql`DROP TABLE \`payload_locked_documents\`;`)
