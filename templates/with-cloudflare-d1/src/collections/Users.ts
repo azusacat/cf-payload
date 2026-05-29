@@ -7,7 +7,26 @@ export const Users: CollectionConfig = {
   },
   auth: true,
   fields: [
-    // Email added by default
-    // Add more fields as needed
+    {
+      name: 'name',
+      type: 'text',
+    },
+    {
+      name: 'role',
+      type: 'select',
+      options: [
+        { label: 'Zero2 admin', value: 'Zero2 admin' },
+        { label: 'Zero2 Staff', value: 'Zero2 Staff' },
+        { label: 'Teacher', value: 'Teacher' },
+      ],
+    },
+    {
+      name: 'title',
+      type: 'text',
+    },
+    {
+      name: 'phone',
+      type: 'text',
+    },
   ],
 }

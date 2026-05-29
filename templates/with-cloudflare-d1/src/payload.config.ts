@@ -10,6 +10,8 @@ import { r2Storage } from '@payloadcms/storage-r2'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
+import { Schools } from './collections/Schools'
+import { Missions } from './collections/Missions'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -50,8 +52,11 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media],
+  collections: [Users, Media, Schools, Missions],
   editor: lexicalEditor(),
+  onInit: async (payload) => {
+    await seedSampleData({ payload })
+  },
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
@@ -65,6 +70,113 @@ export default buildConfig({
     }),
   ],
 })
+
+async function seedSampleData({ payload }: { payload: any }): Promise<void> {
+  const shouldSeed = await getShouldSeed({ payload })
+  if (!shouldSeed) {
+    return
+  }
+
+  const password = getSeedPassword()
+
+  payload.logger.info('[seed] Seeding sample Schools / Users / Missions...')
+  payload.logger.info(
+    `[seed] Created user passwords are logged once. Change them immediately in production.`,
+  )
+
+  const school1 = await payload.create({
+    collection: 'schools',
+    data: { name: 'Zero2 Academy', remarks: 'Sample school' },
+    overrideAccess: true,
+  })
+
+  const school2 = await payload.create({
+    collection: 'schools',
+    data: { name: 'North Ridge School', remarks: 'Sample school' },
+    overrideAccess: true,
+  })
+
+  const teacher = await payload.create({
+    collection: 'users',
+    data: {
+      email: 'teacher@zero2.example',
+      password,
+      name: 'Pat Teacher',
+      role: 'Teacher',
+      title: 'Teacher',
+      phone: '+1 (555) 010-0001',
+    },
+    overrideAccess: true,
+  })
+
+  await payload.create({
+    collection: 'users',
+    data: {
+      email: 'admin@zero2.example',
+      password,
+      name: 'Alex Admin',
+      role: 'Zero2 admin',
+      title: 'Admin',
+      phone: '+1 (555) 010-0002',
+    },
+    overrideAccess: true,
+  })
+
+  await payload.create({
+    collection: 'missions',
+    data: {
+      name: 'Welcome Mission',
+      remarks: 'Sample mission',
+      school: school1.id,
+      teacher: teacher.id,
+    },
+    overrideAccess: true,
+  })
+
+  await payload.create({
+    collection: 'missions',
+    data: {
+      name: 'Second Mission',
+      remarks: 'Sample mission',
+      school: school2.id,
+      teacher: teacher.id,
+    },
+    overrideAccess: true,
+  })
+
+  payload.logger.info({ msg: '[seed] Seed complete', seededUserPassword: password })
+}
+
+async function getShouldSeed({ payload }: { payload: any }): Promise<boolean> {
+  const [schools, missions, users] = await Promise.all([
+    payload.find({ collection: 'schools', limit: 1, overrideAccess: true }),
+    payload.find({ collection: 'missions', limit: 1, overrideAccess: true }),
+    payload.find({ collection: 'users', limit: 1, overrideAccess: true }),
+  ])
+
+  return (
+    (schools?.totalDocs ?? 0) === 0 &&
+    (missions?.totalDocs ?? 0) === 0 &&
+    (users?.totalDocs ?? 0) === 0
+  )
+}
+
+function getSeedPassword(): string {
+  if (process.env.PAYLOAD_SEED_PASSWORD) {
+    return process.env.PAYLOAD_SEED_PASSWORD
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
+    return 'test'
+  }
+
+  const uuid = globalThis.crypto?.randomUUID?.()
+  if (uuid) {
+    return uuid
+  }
+
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`
+}
 
 // Adapted from https://github.com/opennextjs/opennextjs-cloudflare/blob/d00b3a13e42e65aad76fba41774815726422cc39/packages/cloudflare/src/api/cloudflare-context.ts#L328C36-L328C46
 function getCloudflareContextFromWrangler(): Promise<CloudflareContext> {
